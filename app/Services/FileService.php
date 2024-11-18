@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
-use App\Enums\ImageType;
 use Illuminate\Http\UploadedFile;
+use App\Enums\ImageType;
 use Illuminate\Support\Facades\Storage;
 
-class ImageService
+class FileService
 {
     /**
      * Save image to storage public/assets/img/{type}
@@ -19,8 +19,8 @@ class ImageService
     {
         //save image to storage public/assets/img/{type}
         $fileName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-        $imagePath = $image->storeAs('assets/img/' . $type->value, $fileName, 'public');
-        return $imagePath;
+        $image->move(public_path('assets/img/' . $type->value), $fileName);
+        return $type->value.'/'.$fileName;
     }
 
     /**

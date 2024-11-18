@@ -16,8 +16,11 @@
             <form action="{{ route('adminHotelSearchResult') }}" method="post">
                 @csrf
                 <input type="text" name="hotel_name" value="" placeholder="ホテル名">
+
                 <button type="submit">検索</button>
+                <a href="{{ route('adminHotelCreatePage') }}">ホテル登録</a>
             </form>
+            
         </div>
         <hr>
     </div>

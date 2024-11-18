@@ -26,7 +26,7 @@
                         @foreach($hotelList as $hotel)
                             <tr style="background-color:#BDF1FF">
                                 <td>
-                                    <a href="" target="_blank">{{ $hotel['hotel_name'] }}</a>
+                                    <a href="{{ route('adminHotelEditPage', ['hotel_id' => $hotel['hotel_id']]) }}" target="">{{ $hotel['hotel_name'] }}</a>
                                 </td>
                                 <td>
                                     {{ $hotel['prefecture']['prefecture_name'] }}
@@ -38,14 +38,12 @@
                                     {{ (string) $hotel['updated_at'] }}
                                 </td>
                                 <td>
-                                    <form action="{{ route('adminHotelEditPage') }}" method="get">
-                                        @csrf
-                                        <input type="hidden" name="hotel_id" value="{{ $hotel['hotel_id'] }}">
+                                    <form action="{{ route('adminHotelEditPage', ['hotel_id' => $hotel['hotel_id']]) }}" method="get">
                                         <button type="submit">編集</button>
                                     </form>
                                 </td>
                                 <td>
-                                    <form action="{{ route('adminHotelDeleteProcess') }}" method="post">
+                                    <form action="{{ route('adminHotelDeleteProcess') }}" method="post" onclick="return confirmDelete()">
                                         @csrf
                                         <input type="hidden" name="hotel_id" value="{{ $hotel['hotel_id'] }}">
                                         <button type="submit">削除</button>
@@ -56,8 +54,17 @@
                     </tbody>
                 </table>
             @else
-                <p>検索結果がありません</p>
+                @if (isset($errorMessage))
+                    <p class="error-message">{{ $errorMessage }}</p>
+                @else
+                    <p>検索結果がありません</p>
+                @endif
             @endif
         </div>
     </div>
+    <script>
+        function confirmDelete() {
+            return confirm('本当に削除しますか？');
+        }
+    </script>
 @endsection

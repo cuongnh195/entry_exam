@@ -4,6 +4,6 @@ namespace App\Enums;
 
 enum ImageType: string
 {
-    case HOTEL = 'hotel';
+    case HOTEL = 'hoteltype';
     // Add other image types as needed
 }

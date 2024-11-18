@@ -9,15 +9,20 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Models\Hotel;
 use App\Services\HotelService;
+use App\Services\PrefectureService;
 use Illuminate\Support\Facades\Log;
 
 class HotelController extends Controller
 {
-    protected $hotelService;
+    private $hotelService;
+    private $prefectureService;
 
-    public function __construct(HotelService $hotelService)
-    {
+    public function __construct(
+        HotelService $hotelService,
+        PrefectureService $prefectureService
+    ) {
         $this->hotelService = $hotelService;
+        $this->prefectureService = $prefectureService;
     }
 
     /** get methods */
@@ -31,27 +36,47 @@ class HotelController extends Controller
         return view('admin.hotel.result');
     }
 
-    public function showEdit(): View
+    /**
+     * Show edit page
+     *
+     * @param int $hotelId
+     * @return View
+     */
+    public function showEdit(int $hotelId): View
     {
-        return view('admin.hotel.edit');
+        $prefectures = $this->prefectureService->all();
+        $hotel = $this->hotelService->getHotelDetail($hotelId);
+        return view('admin.hotel.edit', compact('hotel', 'prefectures'));
     }
 
+    /**
+     * Show create page
+     *
+     * @return View
+     */
     public function showCreate(): View
     {
-        return view('admin.hotel.create');
+        $prefectures = $this->prefectureService->all();
+
+        return view('admin.hotel.create', compact('prefectures'));
     }
 
-    /** post methods */
 
+    /**
+     * Search result
+     *
+     * @param Request $request
+     * @return View
+     */
     public function searchResult(Request $request): View
     {
-        $var = [];
-
         $hotelNameToSearch = $request->input('hotel_name');
-        $hotelList = Hotel::getHotelListByName($hotelNameToSearch);
-
-        $var['hotelList'] = $hotelList;
-
+    
+        if (empty($hotelNameToSearch)) {
+            return view('admin.hotel.result')->with('errorMessage', __('messages.hotel_search_error'));
+        }
+        $var = [];
+        $var['hotelList'] = $this->hotelService->searchHotel($hotelNameToSearch);
         return view('admin.hotel.result', $var);
     }
 
@@ -60,12 +85,12 @@ class HotelController extends Controller
      *
      * @param UpdateHotelRequest $request
      */
-    public function edit(UpdateHotelRequest $request)
+    public function edit(UpdateHotelRequest $request, int $hotelId)
     {
         try {
-            $this->hotelService->updateHotel($request->validated(), $request->input('hotel_id'));
+            $this->hotelService->updateHotel($request->validated(), $hotelId);
 
-            return redirect()->route('admin.hotel.index')
+            return redirect()->route('adminHotelSearchPage')
                 ->with('success', __('messages.hotel_updated_success'));
         } catch (\Exception $e) {
             Log::error(__('messages.hotel_update_error') . $e->getMessage());
@@ -86,7 +111,7 @@ class HotelController extends Controller
         try {
             $this->hotelService->createHotel($request->validated());
 
-            return redirect()->route('admin.hotel.index')
+            return redirect()->route('adminHotelSearchPage')
                 ->with('success', __('messages.hotel_created_success'));
         } catch (\Exception $e) {
             Log::error(__('messages.hotel_creation_error') . $e->getMessage());
@@ -107,7 +132,7 @@ class HotelController extends Controller
         try {
             $this->hotelService->deleteHotel($request->input('hotel_id'));
             
-            return redirect()->route('admin.hotel.index')
+            return redirect()->route('adminHotelSearchPage')
                 ->with('success', __('messages.hotel_deleted_success'));
         } catch (\Exception $e) {
             Log::error(__('messages.hotel_deletion_error') . $e->getMessage());

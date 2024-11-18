@@ -2,22 +2,24 @@
 
 namespace App\Services;
 
-use App\Http\Requests\Admin\CreateHotelRequest;
 use App\Models\Hotel;
 use App\Repositories\Hotel\HotelRepositoryInterface;
 use App\Models\Prefecture;
+use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Model;
+use App\Services\FileService;
 
 class HotelService
 {
-    protected $hotelRepository;
-    protected $imageService;
+    private $hotelRepository;
+    private $fileService;
 
     public function __construct(
         HotelRepositoryInterface $hotelRepository,
-        ImageService $imageService
+        FileService $fileService
     ) {
         $this->hotelRepository = $hotelRepository;
-        $this->imageService = $imageService;
+        $this->fileService = $fileService;
     }
 
     /**
@@ -52,8 +54,8 @@ class HotelService
     public function createHotel(array $data): Hotel
     {
         // save image to storage public/assets/img
-        $imagePath = $this->imageService->saveImage($data['file']);
-        $data['image_path'] = $imagePath;
+        $imagePath = $this->fileService->saveImage($data['file']);
+        $data['file_path'] = $imagePath;
         unset($data['file']);
 
         //TODO: add column file name to hotel table or create new table for image
@@ -83,12 +85,17 @@ class HotelService
     {
         //check update image
         if (isset($data['file'])) {
-            $imagePath = $this->imageService->saveImage($data['file']);
-            $data['image_path'] = $imagePath;
+            $imagePath = $this->fileService->saveImage($data['file']);
+            $data['file_path'] = $imagePath;
             unset($data['file']);
         }
 
         //update hotel
         return $this->hotelRepository->update($hotelId, $data);
+    }
+
+    public function searchHotel(string $hotelName): Collection
+    {
+        return $this->hotelRepository->searchWithPrefecture($hotelName);
     }
 }

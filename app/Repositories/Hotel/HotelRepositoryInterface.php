@@ -10,4 +10,6 @@ interface HotelRepositoryInterface
     public function update(int $id, array $data);
     public function delete(int $id);
     public function getHotelsByPrefectureId(int $prefectureId);
+    public function search(string $name, array $columns);
+    public function searchWithPrefecture(string $name);
 }
